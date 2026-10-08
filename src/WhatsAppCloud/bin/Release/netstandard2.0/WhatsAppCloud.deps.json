@@ -7,7 +7,7 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "WhatsAppCloud/1.0.0": {
+      "WhatsAppCloud/1.0.1": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
           "System.Text.Json": "8.0.5"
@@ -113,7 +113,7 @@
     }
   },
   "libraries": {
-    "WhatsAppCloud/1.0.0": {
+    "WhatsAppCloud/1.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

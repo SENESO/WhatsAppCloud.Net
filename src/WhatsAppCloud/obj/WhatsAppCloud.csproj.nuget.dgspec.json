@@ -5,7 +5,7 @@
   },
   "projects": {
     "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/WhatsAppCloud.csproj": {
-      "version": "1.0.0",
+      "version": "1.0.1",
       "restore": {
         "projectUniqueName": "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/WhatsAppCloud.csproj",
         "projectName": "WhatsAppCloud.Net",
