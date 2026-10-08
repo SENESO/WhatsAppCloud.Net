@@ -6,6 +6,7 @@
     <Authors>Eslam Ashraf;Github Contributors</Authors>
     <PackageTags>whatsapp;whatsapp-cloud-api;meta;messaging;sdk</PackageTags>
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <PackageId>WhatsAppCloud.Net</PackageId>
     <RootNamespace>WhatsAppCloud</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>

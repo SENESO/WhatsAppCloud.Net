@@ -630,7 +630,7 @@
     "version": "1.0.0",
     "restore": {
       "projectUniqueName": "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/WhatsAppCloud.csproj",
-      "projectName": "WhatsAppCloud",
+      "projectName": "WhatsAppCloud.Net",
       "projectPath": "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/WhatsAppCloud.csproj",
       "packagesPath": "/home/hatch/.nuget/packages/",
       "outputPath": "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/",

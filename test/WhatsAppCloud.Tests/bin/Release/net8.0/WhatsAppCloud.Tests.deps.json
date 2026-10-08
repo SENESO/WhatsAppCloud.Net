@@ -11,7 +11,8 @@
           "Microsoft.NET.Test.Sdk": "17.8.0",
           "NUnit": "3.14.0",
           "NUnit3TestAdapter": "4.5.0",
-          "WhatsAppCloud": "1.0.0"
+          "WhatsAppCloud.Net": "1.0.0",
+          "WhatsAppCloud": "1.0.0.0"
         },
         "runtime": {
           "WhatsAppCloud.Tests.dll": {}
@@ -314,13 +315,21 @@
       "NUnit3TestAdapter/4.5.0": {},
       "System.Reflection.Metadata/1.6.0": {},
       "System.Text.Json/8.0.5": {},
-      "WhatsAppCloud/1.0.0": {
+      "WhatsAppCloud.Net/1.0.0": {
         "dependencies": {
           "System.Text.Json": "8.0.5"
         },
         "runtime": {
           "WhatsAppCloud.dll": {
             "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "WhatsAppCloud/1.0.0.0": {
+        "runtime": {
+          "WhatsAppCloud.dll": {
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -417,8 +426,13 @@
       "path": "system.text.json/8.0.5",
       "hashPath": "system.text.json.8.0.5.nupkg.sha512"
     },
-    "WhatsAppCloud/1.0.0": {
+    "WhatsAppCloud.Net/1.0.0": {
       "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "WhatsAppCloud/1.0.0.0": {
+      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }

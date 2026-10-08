@@ -385,17 +385,17 @@
           "buildTransitive/net6.0/System.Text.Json.targets": {}
         }
       },
-      "WhatsAppCloud/1.0.0": {
+      "WhatsAppCloud.Net/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
           "System.Text.Json": "8.0.5"
         },
         "compile": {
-          "bin/placeholder/WhatsAppCloud.dll": {}
+          "bin/placeholder/WhatsAppCloud.Net.dll": {}
         },
         "runtime": {
-          "bin/placeholder/WhatsAppCloud.dll": {}
+          "bin/placeholder/WhatsAppCloud.Net.dll": {}
         }
       }
     }
@@ -993,7 +993,7 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "WhatsAppCloud/1.0.0": {
+    "WhatsAppCloud.Net/1.0.0": {
       "type": "project",
       "path": "../../src/WhatsAppCloud/WhatsAppCloud.csproj",
       "msbuildProject": "../../src/WhatsAppCloud/WhatsAppCloud.csproj"
@@ -1004,7 +1004,7 @@
       "Microsoft.NET.Test.Sdk >= 17.8.0",
       "NUnit >= 3.14.0",
       "NUnit3TestAdapter >= 4.5.0",
-      "WhatsAppCloud >= 1.0.0"
+      "WhatsAppCloud.Net >= 1.0.0"
     ]
   },
   "packageFolders": {
