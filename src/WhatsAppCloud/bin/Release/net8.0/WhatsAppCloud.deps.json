@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "WhatsAppCloud/1.0.1": {
+      "WhatsAppCloud/1.0.2": {
         "dependencies": {
           "System.Text.Json": "8.0.5"
         },
@@ -18,7 +18,7 @@
     }
   },
   "libraries": {
-    "WhatsAppCloud/1.0.1": {
+    "WhatsAppCloud/1.0.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
