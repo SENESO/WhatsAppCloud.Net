@@ -1,0 +1,11 @@
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/bin/Release/netstandard2.0/WhatsAppCloud.deps.json
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/bin/Release/netstandard2.0/WhatsAppCloud.dll
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/bin/Release/netstandard2.0/WhatsAppCloud.pdb
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.csproj.AssemblyReference.cache
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.GeneratedMSBuildEditorConfig.editorconfig
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.AssemblyInfoInputs.cache
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.AssemblyInfo.cs
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.csproj.CoreCompileInputs.cache
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.sourcelink.json
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.dll
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/obj/Release/netstandard2.0/WhatsAppCloud.pdb

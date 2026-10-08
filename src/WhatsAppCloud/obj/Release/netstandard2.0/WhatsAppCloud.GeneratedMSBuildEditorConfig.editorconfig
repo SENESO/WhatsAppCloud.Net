@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = WhatsAppCloud
+build_property.ProjectDir = /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
