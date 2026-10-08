@@ -1,3 +1,9 @@
+![WhatsAppCloud.Net](docs/banner.png)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-netstandard2.0%20%7C%20net8.0-512BD4)](https://dotnet.microsoft.com/)
+[![GitHub stars](https://img.shields.io/github/stars/SENESO/WhatsAppCloud.Net)](https://github.com/SENESO/WhatsAppCloud.Net/stargazers)
+
 # WhatsAppCloud.Net
 
 The missing .NET SDK for Meta's **WhatsApp Business Cloud API** — more complete
