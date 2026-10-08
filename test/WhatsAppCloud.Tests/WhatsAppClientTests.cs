@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -123,6 +124,123 @@ namespace WhatsAppCloud.Tests
                 new WhatsAppClient(new WhatsAppClientOptions { AccessToken = "x" }));
             Assert.Throws<ArgumentException>(() =>
                 new WhatsAppClient(new WhatsAppClientOptions { PhoneNumberId = "x" }));
+        }
+
+        [Test]
+        public async Task SendVideoAsync_PostsVideoPayload()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            var result = await client.SendVideoAsync("201012345678", "https://example.com/v.mp4", "Watch this");
+
+            Assert.IsTrue(result.Successful);
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                Assert.AreEqual("video", doc.RootElement.GetProperty("type").GetString());
+                Assert.AreEqual("https://example.com/v.mp4",
+                    doc.RootElement.GetProperty("video").GetProperty("link").GetString());
+            }
+        }
+
+        [Test]
+        public async Task SendLocationAsync_PostsCoordinates()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendLocationAsync("201012345678", 30.0444, 31.2357, "Cairo", "Egypt");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                var loc = doc.RootElement.GetProperty("location");
+                Assert.AreEqual(30.0444, loc.GetProperty("latitude").GetDouble(), 0.0001);
+                Assert.AreEqual(31.2357, loc.GetProperty("longitude").GetDouble(), 0.0001);
+                Assert.AreEqual("Cairo", loc.GetProperty("name").GetString());
+            }
+        }
+
+        [Test]
+        public async Task SendButtonsAsync_PostsInteractiveButtons()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendButtonsAsync("201012345678", "Pick one",
+                new[] { new ReplyButton { Id = "yes", Title = "Yes" }, new ReplyButton { Id = "no", Title = "No" } },
+                "footer here");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                var interactive = doc.RootElement.GetProperty("interactive");
+                Assert.AreEqual("button", interactive.GetProperty("type").GetString());
+                var buttons = interactive.GetProperty("action").GetProperty("buttons")
+                    .EnumerateArray().ToList();
+                Assert.AreEqual(2, buttons.Count);
+                Assert.AreEqual("yes", buttons[0].GetProperty("reply").GetProperty("id").GetString());
+                Assert.AreEqual("footer here", interactive.GetProperty("footer").GetProperty("text").GetString());
+            }
+        }
+
+        [Test]
+        public async Task SendListAsync_PostsInteractiveList()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendListAsync("201012345678", "Choose", "Open",
+                new[]
+                {
+                    new ListSection
+                    {
+                        Title = "Drinks",
+                        Rows = new List<ListRow>
+                        {
+                            new ListRow { Id = "tea", Title = "Tea" },
+                            new ListRow { Id = "coffee", Title = "Coffee", Description = "Hot" }
+                        }
+                    }
+                });
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                var interactive = doc.RootElement.GetProperty("interactive");
+                Assert.AreEqual("list", interactive.GetProperty("type").GetString());
+                var rows = interactive.GetProperty("action").GetProperty("sections")[0]
+                    .GetProperty("rows").EnumerateArray().ToList();
+                Assert.AreEqual(2, rows.Count);
+                Assert.AreEqual("coffee", rows[1].GetProperty("id").GetString());
+            }
+        }
+
+        [Test]
+        public async Task MarkAsReadAsync_PostsReadStatus()
+        {
+            var handler = new FakeHandler(@"{ ""success"": true }");
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.MarkAsReadAsync("wamid.abc");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                Assert.AreEqual("read", doc.RootElement.GetProperty("status").GetString());
+                Assert.AreEqual("wamid.abc", doc.RootElement.GetProperty("message_id").GetString());
+            }
+        }
+
+        [Test]
+        public async Task ReplyToMessageId_AddsContext()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendTextAsync("201012345678", "replying", replyToMessageId: "wamid.orig");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                Assert.AreEqual("wamid.orig",
+                    doc.RootElement.GetProperty("context").GetProperty("message_id").GetString());
+            }
         }
 
         private class FakeHandler : HttpMessageHandler

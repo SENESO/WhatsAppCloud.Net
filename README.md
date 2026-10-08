@@ -1,10 +1,13 @@
 # WhatsAppCloud.Net
 
-The missing .NET SDK for Meta's **WhatsApp Business Cloud API**.
+The missing .NET SDK for Meta's **WhatsApp Business Cloud API** — more complete
+than Meta's own Node.js SDK: every message type, read receipts, replies,
+webhook security, and typed parsing.
 
-PHP has a 682-star SDK. Meta ships an official Node.js one. Java has one. .NET had nothing serious — until now.
-
-Send text, template and media messages, verify webhooks, parse inbound messages. No dependencies beyond `System.Text.Json`. Targets `netstandard2.0` and `net8.0`.
+Send text, template, image, video, audio, document, sticker, location,
+contacts, and interactive buttons/lists. Verify webhooks, parse inbound
+messages. No dependencies beyond `System.Text.Json`. Targets `netstandard2.0`
+and `net8.0`.
 
 ## Install
 
@@ -34,6 +37,47 @@ await client.SendTemplateAsync("201012345678", "order_update", "en_US",
 // Image by URL
 await client.SendImageAsync("201012345678",
     "https://example.com/order.jpg", caption: "Your order shipped!");
+
+// Video, audio, document, sticker
+await client.SendVideoAsync("201012345678", "https://example.com/demo.mp4");
+await client.SendDocumentAsync("201012345678", "https://example.com/invoice.pdf", filename: "invoice.pdf");
+
+// Location & contacts
+await client.SendLocationAsync("201012345678", 30.0444, 31.2357, "Cairo", "Egypt");
+await client.SendContactsAsync("201012345678", new[]
+{
+    new WhatsAppContact { FormattedName = "Ahmed Hassan", FirstName = "Ahmed",
+        Phones = new List<ContactPhone> { new ContactPhone { Phone = "+201012345678" } } }
+});
+
+// Interactive reply buttons (up to 3)
+await client.SendButtonsAsync("201012345678", "Confirm your order?",
+    new[]
+    {
+        new ReplyButton { Id = "confirm", Title = "Confirm" },
+        new ReplyButton { Id = "cancel", Title = "Cancel" }
+    });
+
+// Interactive list
+await client.SendListAsync("201012345678", "Pick a drink", "Open menu",
+    new[]
+    {
+        new ListSection
+        {
+            Title = "Drinks",
+            Rows = new List<ListRow>
+            {
+                new ListRow { Id = "tea", Title = "Tea" },
+                new ListRow { Id = "coffee", Title = "Coffee", Description = "Freshly brewed" }
+            }
+        }
+    });
+
+// Reply to a specific message (works on every send method)
+await client.SendTextAsync("201012345678", "Got it!", replyToMessageId: "wamid.xyz");
+
+// Blue ticks — call when your webhook receives a message
+await client.MarkAsReadAsync("wamid.xyz");
 ```
 
 Bring your own `HttpClient` (e.g. from `IHttpClientFactory`):
