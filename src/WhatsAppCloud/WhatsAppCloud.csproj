@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>The missing .NET SDK for Meta's WhatsApp Business Cloud API. Send text, template and media messages; verify webhooks.</Description>
+    <AssemblyTitle>WhatsAppCloud.Net</AssemblyTitle>
+    <Authors>Eslam Ashraf;Github Contributors</Authors>
+    <PackageTags>whatsapp;whatsapp-cloud-api;meta;messaging;sdk</PackageTags>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <RootNamespace>WhatsAppCloud</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+</Project>

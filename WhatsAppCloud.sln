@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WhatsAppCloud", "src\WhatsAppCloud\WhatsAppCloud.csproj", "{C5BD64F6-08E7-4761-ADDB-E9D284E3CD75}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WhatsAppCloud.Tests", "test\WhatsAppCloud.Tests\WhatsAppCloud.Tests.csproj", "{A2D17EFA-2D22-4488-8F0D-65743A5AA08D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5BD64F6-08E7-4761-ADDB-E9D284E3CD75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5BD64F6-08E7-4761-ADDB-E9D284E3CD75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5BD64F6-08E7-4761-ADDB-E9D284E3CD75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5BD64F6-08E7-4761-ADDB-E9D284E3CD75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2D17EFA-2D22-4488-8F0D-65743A5AA08D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2D17EFA-2D22-4488-8F0D-65743A5AA08D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2D17EFA-2D22-4488-8F0D-65743A5AA08D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2D17EFA-2D22-4488-8F0D-65743A5AA08D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
