@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyDescriptionAttribute("The missing .NET SDK for Meta\'s WhatsApp Business Cloud API. Send text, template " +
     "and media messages; verify webhooks.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.1.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.1.0+aa1f28b385f370bdd9d5177511c2b0fecd5dbf5c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.1.0+1556576e523fa28592145dbeebd0fc6848613b80")]
 [assembly: System.Reflection.AssemblyProductAttribute("WhatsAppCloud")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WhatsAppCloud.Net")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.1.0.0")]
