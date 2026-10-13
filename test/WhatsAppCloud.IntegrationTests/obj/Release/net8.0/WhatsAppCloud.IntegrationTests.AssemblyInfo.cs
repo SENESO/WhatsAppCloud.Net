@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WhatsAppCloud.IntegrationTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+59f422555bda071188ccd1564f4889a674db863d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aa1f28b385f370bdd9d5177511c2b0fecd5dbf5c")]
 [assembly: System.Reflection.AssemblyProductAttribute("WhatsAppCloud.IntegrationTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WhatsAppCloud.IntegrationTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

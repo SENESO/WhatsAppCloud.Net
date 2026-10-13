@@ -14,11 +14,15 @@ namespace WhatsAppCloud.Webhooks
         /// when you configure the webhook URL). Returns the challenge to echo back,
         /// or null when the request is not a valid verification attempt.
         /// </summary>
-        public static string VerifyChallenge(string mode, string verifyToken, string challenge, string expectedVerifyToken)
+        public static string? VerifyChallenge(string? mode, string? verifyToken, string? challenge, string? expectedVerifyToken)
         {
             if (mode == "subscribe"
-                && !string.IsNullOrEmpty(challenge)
-                && verifyToken == expectedVerifyToken)
+                && challenge != null && challenge.Length > 0
+                && verifyToken != null
+                && expectedVerifyToken != null
+                && FixedTimeEquals(
+                    Encoding.UTF8.GetBytes(verifyToken),
+                    Encoding.UTF8.GetBytes(expectedVerifyToken)))
             {
                 return challenge;
             }
@@ -30,11 +34,10 @@ namespace WhatsAppCloud.Webhooks
         /// body, keyed with your app secret). Always validate inbound POSTs on a
         /// publicly reachable webhook — otherwise anyone can forge messages.
         /// </summary>
-        public static bool IsValidSignature(string appSecret, string requestBody, string signatureHeader)
+        public static bool IsValidSignature(string? appSecret, string? requestBody, string? signatureHeader)
         {
-            if (string.IsNullOrEmpty(appSecret)
-                || string.IsNullOrEmpty(requestBody)
-                || string.IsNullOrEmpty(signatureHeader))
+            if (appSecret == null || requestBody == null || signatureHeader == null
+                || appSecret.Length == 0 || requestBody.Length == 0 || signatureHeader.Length == 0)
                 return false;
 
             const string prefix = "sha256=";
@@ -56,7 +59,7 @@ namespace WhatsAppCloud.Webhooks
 
         // Constant-time comparison to avoid timing attacks. Implemented manually
         // for netstandard2.0 (CryptographicOperations is netstandard2.1+).
-        private static bool FixedTimeEquals(byte[] a, byte[] b)
+        private static bool FixedTimeEquals(byte[]? a, byte[]? b)
         {
             if (a == null || b == null || a.Length != b.Length)
                 return false;

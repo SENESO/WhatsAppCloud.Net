@@ -117,5 +117,143 @@ namespace WhatsAppCloud.Tests
             Assert.AreEqual("wamid.bbb", statuses[0].MessageId);
             Assert.AreEqual("delivered", statuses[0].Status);
         }
+        [Test]
+        public void Parser_ExtractsVideoCaptionAndMediaId()
+        {
+            const string json = @"{
+                ""object"": ""whatsapp_business_account"",
+                ""entry"": [{
+                    ""id"": ""111"",
+                    ""changes"": [{
+                        ""field"": ""messages"",
+                        ""value"": {
+                            ""messaging_product"": ""whatsapp"",
+                            ""messages"": [{
+                                ""from"": ""201012345678"",
+                                ""id"": ""wamid.vid"",
+                                ""timestamp"": ""1728000000"",
+                                ""type"": ""video"",
+                                ""video"": {
+                                    ""id"": ""mid.video1"",
+                                    ""mime_type"": ""video/mp4"",
+                                    ""caption"": ""Watch this!""
+                                }
+                            }]
+                        }
+                    }]
+                }]
+            }";
+
+            var messages = WebhookParser.GetMessages(WebhookParser.Parse(json));
+
+            Assert.AreEqual(1, messages.Count);
+            Assert.AreEqual("video", messages[0].Type);
+            Assert.AreEqual("Watch this!", messages[0].Text);
+            Assert.AreEqual("mid.video1", messages[0].MediaId);
+        }
+
+        [Test]
+        public void Parser_ExtractsDocumentCaptionAndMediaId()
+        {
+            const string json = @"{
+                ""object"": ""whatsapp_business_account"",
+                ""entry"": [{
+                    ""id"": ""111"",
+                    ""changes"": [{
+                        ""field"": ""messages"",
+                        ""value"": {
+                            ""messaging_product"": ""whatsapp"",
+                            ""messages"": [{
+                                ""from"": ""201012345678"",
+                                ""id"": ""wamid.doc"",
+                                ""timestamp"": ""1728000000"",
+                                ""type"": ""document"",
+                                ""document"": {
+                                    ""id"": ""mid.doc1"",
+                                    ""mime_type"": ""application/pdf"",
+                                    ""filename"": ""invoice.pdf"",
+                                    ""caption"": ""Your invoice""
+                                }
+                            }]
+                        }
+                    }]
+                }]
+            }";
+
+            var messages = WebhookParser.GetMessages(WebhookParser.Parse(json));
+
+            Assert.AreEqual(1, messages.Count);
+            Assert.AreEqual("Your invoice", messages[0].Text);
+            Assert.AreEqual("mid.doc1", messages[0].MediaId);
+        }
+
+        [Test]
+        public void Parser_ExtractsInteractiveButtonReply()
+        {
+            const string json = @"{
+                ""object"": ""whatsapp_business_account"",
+                ""entry"": [{
+                    ""id"": ""111"",
+                    ""changes"": [{
+                        ""field"": ""messages"",
+                        ""value"": {
+                            ""messaging_product"": ""whatsapp"",
+                            ""messages"": [{
+                                ""from"": ""201012345678"",
+                                ""id"": ""wamid.btn"",
+                                ""timestamp"": ""1728000000"",
+                                ""type"": ""interactive"",
+                                ""interactive"": {
+                                    ""type"": ""button_reply"",
+                                    ""button_reply"": { ""id"": ""confirm"", ""title"": ""Confirm"" }
+                                }
+                            }]
+                        }
+                    }]
+                }]
+            }";
+
+            var messages = WebhookParser.GetMessages(WebhookParser.Parse(json));
+
+            Assert.AreEqual(1, messages.Count);
+            Assert.AreEqual("interactive", messages[0].Type);
+            Assert.AreEqual("confirm", messages[0].ReplyId);
+            Assert.AreEqual("Confirm", messages[0].ReplyTitle);
+            Assert.AreEqual("Confirm", messages[0].Text);
+            Assert.IsNull(messages[0].MediaId);
+        }
+
+        [Test]
+        public void Parser_ExtractsInteractiveListReply()
+        {
+            const string json = @"{
+                ""object"": ""whatsapp_business_account"",
+                ""entry"": [{
+                    ""id"": ""111"",
+                    ""changes"": [{
+                        ""field"": ""messages"",
+                        ""value"": {
+                            ""messaging_product"": ""whatsapp"",
+                            ""messages"": [{
+                                ""from"": ""201012345678"",
+                                ""id"": ""wamid.lst"",
+                                ""timestamp"": ""1728000000"",
+                                ""type"": ""interactive"",
+                                ""interactive"": {
+                                    ""type"": ""list_reply"",
+                                    ""list_reply"": { ""id"": ""tea"", ""title"": ""Tea"", ""description"": ""Hot"" }
+                                }
+                            }]
+                        }
+                    }]
+                }]
+            }";
+
+            var messages = WebhookParser.GetMessages(WebhookParser.Parse(json));
+
+            Assert.AreEqual(1, messages.Count);
+            Assert.AreEqual("tea", messages[0].ReplyId);
+            Assert.AreEqual("Tea", messages[0].ReplyTitle);
+        }
     }
 }

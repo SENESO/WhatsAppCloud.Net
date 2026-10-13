@@ -117,7 +117,7 @@
           }
         }
       },
-      "System.Text.Json/8.0.5": {
+      "System.Text.Json/8.0.6": {
         "type": "package",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
@@ -159,7 +159,7 @@
       }
     },
     "net8.0": {
-      "System.Text.Json/8.0.5": {
+      "System.Text.Json/8.0.6": {
         "type": "package",
         "compile": {
           "lib/net8.0/System.Text.Json.dll": {
@@ -503,10 +503,10 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "System.Text.Json/8.0.5": {
-      "sha512": "0f1B50Ss7rqxXiaBJyzUu9bWFOO2/zSlifZ/UNMdiIpDYe4cY4LQQicP4nirK1OS31I43rn062UIJ1Q9bpmHpg==",
+    "System.Text.Json/8.0.6": {
+      "sha512": "BvSpVBsVN9b+Y+wONbvJOHd1HjXQf33+XiC28ZMOwRsYb42mz3Q8YHnpTSwpwJLqYCMqM+0UUVC3V+pi25XfkQ==",
       "type": "package",
-      "path": "system.text.json/8.0.5",
+      "path": "system.text.json/8.0.6",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -571,7 +571,7 @@
         "lib/net8.0/System.Text.Json.xml",
         "lib/netstandard2.0/System.Text.Json.dll",
         "lib/netstandard2.0/System.Text.Json.xml",
-        "system.text.json.8.0.5.nupkg.sha512",
+        "system.text.json.8.0.6.nupkg.sha512",
         "system.text.json.nuspec",
         "useSharedDesignerContext.txt"
       ]
@@ -617,17 +617,17 @@
   "projectFileDependencyGroups": {
     ".NETStandard,Version=v2.0": [
       "NETStandard.Library >= 2.0.3",
-      "System.Text.Json >= 8.0.5"
+      "System.Text.Json >= 8.0.6"
     ],
     "net8.0": [
-      "System.Text.Json >= 8.0.5"
+      "System.Text.Json >= 8.0.6"
     ]
   },
   "packageFolders": {
     "/home/hatch/.nuget/packages/": {}
   },
   "project": {
-    "version": "1.0.2",
+    "version": "1.1.0",
     "restore": {
       "projectUniqueName": "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/WhatsAppCloud.csproj",
       "projectName": "WhatsAppCloud.Net",
@@ -644,6 +644,7 @@
         "netstandard2.0"
       ],
       "sources": {
+        "/tmp/nupkg-out": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -657,6 +658,7 @@
         }
       },
       "warningProperties": {
+        "allWarningsAsErrors": true,
         "warnAsError": [
           "NU1605"
         ]
@@ -673,7 +675,7 @@
         "dependencies": {
           "System.Text.Json": {
             "target": "Package",
-            "version": "[8.0.5, )"
+            "version": "[8.0.6, )"
           }
         },
         "imports": [
@@ -705,7 +707,7 @@
           },
           "System.Text.Json": {
             "target": "Package",
-            "version": "[8.0.5, )"
+            "version": "[8.0.6, )"
           }
         },
         "imports": [

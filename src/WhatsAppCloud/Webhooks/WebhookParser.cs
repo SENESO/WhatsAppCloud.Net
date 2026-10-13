@@ -15,13 +15,13 @@ namespace WhatsAppCloud.Webhooks
             PropertyNameCaseInsensitive = false
         };
 
-        public static WebhookPayload Parse(string json)
+        public static WebhookPayload? Parse(string json)
             => JsonSerializer.Deserialize<WebhookPayload>(json, JsonOptions);
 
         /// <summary>
         /// Flattens all inbound messages across entries/changes.
         /// </summary>
-        public static List<IncomingMessage> GetMessages(WebhookPayload payload)
+        public static List<IncomingMessage> GetMessages(WebhookPayload? payload)
         {
             var result = new List<IncomingMessage>();
             if (payload?.Entry == null) return result;
@@ -35,13 +35,19 @@ namespace WhatsAppCloud.Webhooks
                     if (messages == null) continue;
                     foreach (var m in messages)
                     {
+                        var media = m.Image ?? m.Video ?? m.Audio ?? m.Document ?? m.Sticker;
+                        var reply = m.Interactive?.ButtonReply ?? m.Interactive?.ListReply;
+
                         result.Add(new IncomingMessage
                         {
                             From = m.From,
                             Id = m.Id,
                             Timestamp = m.Timestamp,
                             Type = m.Type,
-                            Text = m.Text?.Body ?? m.Image?.Caption
+                            Text = m.Text?.Body ?? media?.Caption ?? reply?.Title,
+                            MediaId = media?.Id,
+                            ReplyId = reply?.Id,
+                            ReplyTitle = reply?.Title
                         });
                     }
                 }
@@ -53,7 +59,7 @@ namespace WhatsAppCloud.Webhooks
         /// <summary>
         /// Flattens all delivery/read status updates across entries/changes.
         /// </summary>
-        public static List<MessageStatus> GetStatuses(WebhookPayload payload)
+        public static List<MessageStatus> GetStatuses(WebhookPayload? payload)
         {
             var result = new List<MessageStatus>();
             if (payload?.Entry == null) return result;

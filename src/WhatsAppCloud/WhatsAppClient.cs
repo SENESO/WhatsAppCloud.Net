@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,8 +16,8 @@ namespace WhatsAppCloud
     /// <summary>
     /// Full-featured, dependency-free client for Meta's WhatsApp Business Cloud API.
     /// One typed method per message type (text, template, image, video, audio,
-    /// document, sticker, location, contacts, interactive buttons/lists), read
-    /// receipts, and reply support on every send.
+    /// document, sticker, location, contacts, interactive buttons/lists), media
+    /// upload/download management, read receipts, and reply support on every send.
     /// Pass your own <see cref="HttpClient"/> (e.g. from IHttpClientFactory) to
     /// control lifetime, retries and logging.
     /// </summary>
@@ -31,7 +32,7 @@ namespace WhatsAppCloud
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
 
-        public WhatsAppClient(WhatsAppClientOptions options, HttpClient httpClient = null)
+        public WhatsAppClient(WhatsAppClientOptions options, HttpClient? httpClient = null)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
             if (string.IsNullOrWhiteSpace(options.PhoneNumberId))
@@ -49,7 +50,7 @@ namespace WhatsAppCloud
         /// service window; otherwise use a template.
         /// </summary>
         public Task<SendMessageResult> SendTextAsync(
-            string to, string body, bool previewUrl = false, string replyToMessageId = null,
+            string to, string body, bool previewUrl = false, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
         {
             var payload = WithReply(new
@@ -68,7 +69,7 @@ namespace WhatsAppCloud
         /// </summary>
         public Task<SendMessageResult> SendTemplateAsync(
             string to, string templateName, string languageCode,
-            IEnumerable<string> bodyParameters = null, string replyToMessageId = null,
+            IEnumerable<string>? bodyParameters = null, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
         {
             object template = bodyParameters?.Any() == true
@@ -103,11 +104,11 @@ namespace WhatsAppCloud
             return PostMessageAsync(payload, cancellationToken);
         }
 
-        // ---------- media ----------
+        // ---------- media (by URL) ----------
 
         /// <summary>Send an image by public HTTPS URL, with an optional caption.</summary>
         public Task<SendMessageResult> SendImageAsync(
-            string to, string imageUrl, string caption = null, string replyToMessageId = null,
+            string to, string imageUrl, string? caption = null, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
             => PostMessageAsync(WithReply(new
             {
@@ -119,7 +120,7 @@ namespace WhatsAppCloud
 
         /// <summary>Send a video by public HTTPS URL, with an optional caption.</summary>
         public Task<SendMessageResult> SendVideoAsync(
-            string to, string videoUrl, string caption = null, string replyToMessageId = null,
+            string to, string videoUrl, string? caption = null, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
             => PostMessageAsync(WithReply(new
             {
@@ -131,7 +132,7 @@ namespace WhatsAppCloud
 
         /// <summary>Send an audio file by public HTTPS URL (voice notes play inline).</summary>
         public Task<SendMessageResult> SendAudioAsync(
-            string to, string audioUrl, string replyToMessageId = null,
+            string to, string audioUrl, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
             => PostMessageAsync(WithReply(new
             {
@@ -143,8 +144,8 @@ namespace WhatsAppCloud
 
         /// <summary>Send a document by public HTTPS URL.</summary>
         public Task<SendMessageResult> SendDocumentAsync(
-            string to, string documentUrl, string filename = null, string caption = null,
-            string replyToMessageId = null, CancellationToken cancellationToken = default)
+            string to, string documentUrl, string? filename = null, string? caption = null,
+            string? replyToMessageId = null, CancellationToken cancellationToken = default)
             => PostMessageAsync(WithReply(new
             {
                 messaging_product = "whatsapp",
@@ -155,7 +156,7 @@ namespace WhatsAppCloud
 
         /// <summary>Send a sticker (WEBP) by public HTTPS URL.</summary>
         public Task<SendMessageResult> SendStickerAsync(
-            string to, string stickerUrl, string replyToMessageId = null,
+            string to, string stickerUrl, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
             => PostMessageAsync(WithReply(new
             {
@@ -165,12 +166,208 @@ namespace WhatsAppCloud
                 sticker = new { link = stickerUrl }
             }, replyToMessageId), cancellationToken);
 
+        // ---------- media (by uploaded ID) ----------
+
+        /// <summary>
+        /// Send an image by media ID (from <see cref="UploadMediaAsync"/>).
+        /// Reusing an uploaded media ID is cheaper than re-uploading or hosting a URL.
+        /// </summary>
+        public Task<SendMessageResult> SendImageByIdAsync(
+            string to, string mediaId, string? caption = null, string? replyToMessageId = null,
+            CancellationToken cancellationToken = default)
+            => PostMessageAsync(WithReply(new
+            {
+                messaging_product = "whatsapp",
+                to,
+                type = "image",
+                image = new { id = RequireMediaId(mediaId), caption }
+            }, replyToMessageId), cancellationToken);
+
+        /// <summary>Send a video by media ID (from <see cref="UploadMediaAsync"/>).</summary>
+        public Task<SendMessageResult> SendVideoByIdAsync(
+            string to, string mediaId, string? caption = null, string? replyToMessageId = null,
+            CancellationToken cancellationToken = default)
+            => PostMessageAsync(WithReply(new
+            {
+                messaging_product = "whatsapp",
+                to,
+                type = "video",
+                video = new { id = RequireMediaId(mediaId), caption }
+            }, replyToMessageId), cancellationToken);
+
+        /// <summary>Send an audio file by media ID (from <see cref="UploadMediaAsync"/>).</summary>
+        public Task<SendMessageResult> SendAudioByIdAsync(
+            string to, string mediaId, string? replyToMessageId = null,
+            CancellationToken cancellationToken = default)
+            => PostMessageAsync(WithReply(new
+            {
+                messaging_product = "whatsapp",
+                to,
+                type = "audio",
+                audio = new { id = RequireMediaId(mediaId) }
+            }, replyToMessageId), cancellationToken);
+
+        /// <summary>Send a document by media ID (from <see cref="UploadMediaAsync"/>).</summary>
+        public Task<SendMessageResult> SendDocumentByIdAsync(
+            string to, string mediaId, string? filename = null, string? caption = null,
+            string? replyToMessageId = null, CancellationToken cancellationToken = default)
+            => PostMessageAsync(WithReply(new
+            {
+                messaging_product = "whatsapp",
+                to,
+                type = "document",
+                document = new { id = RequireMediaId(mediaId), filename, caption }
+            }, replyToMessageId), cancellationToken);
+
+        /// <summary>Send a sticker (WEBP) by media ID (from <see cref="UploadMediaAsync"/>).</summary>
+        public Task<SendMessageResult> SendStickerByIdAsync(
+            string to, string mediaId, string? replyToMessageId = null,
+            CancellationToken cancellationToken = default)
+            => PostMessageAsync(WithReply(new
+            {
+                messaging_product = "whatsapp",
+                to,
+                type = "sticker",
+                sticker = new { id = RequireMediaId(mediaId) }
+            }, replyToMessageId), cancellationToken);
+
+        private static string RequireMediaId(string mediaId)
+        {
+            if (string.IsNullOrWhiteSpace(mediaId))
+                throw new ArgumentException("Media ID is required.", nameof(mediaId));
+            return mediaId;
+        }
+
+        // ---------- media management ----------
+
+        /// <summary>
+        /// Upload a media file from disk to Meta's servers. Returns a media ID
+        /// (valid 30 days) you can pass to the Send*ByIdAsync methods.
+        /// Supported: images (5 MB), video/audio (16 MB), documents (100 MB), stickers (500 KB).
+        /// </summary>
+        public async Task<MediaUploadResult> UploadMediaAsync(
+            string filePath, string mimeType, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentException("File path is required.", nameof(filePath));
+            if (string.IsNullOrWhiteSpace(mimeType))
+                throw new ArgumentException("MIME type is required (e.g. image/jpeg).", nameof(mimeType));
+
+            using (var stream = File.OpenRead(filePath))
+            {
+                return await UploadMediaAsync(
+                    stream, Path.GetFileName(filePath), mimeType, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Upload media from any stream (memory, network, …). The stream is read
+        /// from its current position; the caller keeps ownership of it.
+        /// </summary>
+        public Task<MediaUploadResult> UploadMediaAsync(
+            Stream content, string fileName, string mimeType, CancellationToken cancellationToken = default)
+        {
+            if (content == null) throw new ArgumentNullException(nameof(content));
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new ArgumentException("File name is required.", nameof(fileName));
+            if (string.IsNullOrWhiteSpace(mimeType))
+                throw new ArgumentException("MIME type is required (e.g. image/jpeg).", nameof(mimeType));
+
+            return UploadMediaCoreAsync(content, fileName, mimeType, cancellationToken);
+        }
+
+        private async Task<MediaUploadResult> UploadMediaCoreAsync(
+            Stream content, string fileName, string mimeType, CancellationToken cancellationToken)
+        {
+            var url = $"{_options.BaseUrl.TrimEnd('/')}/{_options.ApiVersion}/{_options.PhoneNumberId}/media";
+
+            using (var form = new MultipartFormDataContent())
+            {
+                var fileContent = new StreamContent(content);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
+                form.Add(fileContent, "file", fileName);
+                form.Add(new StringContent("whatsapp"), "messaging_product");
+                form.Add(new StringContent(mimeType), "type");
+
+                using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+                {
+                    request.Content = form;
+                    var body = await SendWithAuthAsync(request, cancellationToken).ConfigureAwait(false);
+                    return ParseMediaUploadResponse(body);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fetch media metadata (temporary download URL, MIME type, SHA-256, size)
+        /// for a media ID — e.g. one received on an inbound webhook message.
+        /// The URL expires after about 5 minutes: download the bytes immediately.
+        /// </summary>
+        public async Task<MediaInfo?> GetMediaInfoAsync(
+            string mediaId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(mediaId))
+                throw new ArgumentException("Media ID is required.", nameof(mediaId));
+
+            var url = $"{_options.BaseUrl.TrimEnd('/')}/{_options.ApiVersion}/{mediaId}";
+            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            {
+                var body = await SendWithAuthAsync(request, cancellationToken).ConfigureAwait(false);
+                return ParseMediaInfoResponse(body);
+            }
+        }
+
+        /// <summary>
+        /// Delete an uploaded media object. Returns true when the API confirms deletion.
+        /// </summary>
+        public async Task<bool> DeleteMediaAsync(
+            string mediaId, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(mediaId))
+                throw new ArgumentException("Media ID is required.", nameof(mediaId));
+
+            var url = $"{_options.BaseUrl.TrimEnd('/')}/{_options.ApiVersion}/{mediaId}";
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, url))
+            {
+                var body = await SendWithAuthAsync(request, cancellationToken).ConfigureAwait(false);
+                var ok = JsonSerializer.Deserialize<MediaDeleteApiResponse>(body, JsonOptions);
+                return ok?.Success == true;
+            }
+        }
+
+        internal static MediaUploadResult ParseMediaUploadResponse(string json)
+        {
+            ParseSendResponse(json); // throws WhatsAppApiException on error payloads
+            var ok = JsonSerializer.Deserialize<MediaUploadApiResponse>(json, JsonOptions);
+            return new MediaUploadResult { MediaId = ok?.Id };
+        }
+
+        internal static MediaInfo? ParseMediaInfoResponse(string json)
+        {
+            ParseSendResponse(json); // throws WhatsAppApiException on error payloads
+            var ok = JsonSerializer.Deserialize<MediaInfoApiResponse>(json, JsonOptions);
+            if (ok == null) return null;
+
+            long? size = null;
+            if (long.TryParse(ok.FileSize, out var parsed)) size = parsed;
+
+            return new MediaInfo
+            {
+                Id = ok.Id,
+                Url = ok.Url,
+                MimeType = ok.MimeType,
+                Sha256 = ok.Sha256,
+                FileSizeBytes = size
+            };
+        }
+
         // ---------- location & contacts ----------
 
         /// <summary>Send a location pin.</summary>
         public Task<SendMessageResult> SendLocationAsync(
             string to, double latitude, double longitude,
-            string name = null, string address = null, string replyToMessageId = null,
+            string? name = null, string? address = null, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
             => PostMessageAsync(WithReply(new
             {
@@ -182,7 +379,7 @@ namespace WhatsAppCloud
 
         /// <summary>Send one or more contacts.</summary>
         public Task<SendMessageResult> SendContactsAsync(
-            string to, IEnumerable<WhatsAppContact> contacts, string replyToMessageId = null,
+            string to, IEnumerable<WhatsAppContact> contacts, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
         {
             if (contacts == null) throw new ArgumentNullException(nameof(contacts));
@@ -217,7 +414,7 @@ namespace WhatsAppCloud
         /// </summary>
         public Task<SendMessageResult> SendButtonsAsync(
             string to, string bodyText, IEnumerable<ReplyButton> buttons,
-            string footerText = null, string replyToMessageId = null,
+            string? footerText = null, string? replyToMessageId = null,
             CancellationToken cancellationToken = default)
         {
             if (buttons == null) throw new ArgumentNullException(nameof(buttons));
@@ -251,8 +448,8 @@ namespace WhatsAppCloud
         /// </summary>
         public Task<SendMessageResult> SendListAsync(
             string to, string bodyText, string buttonText,
-            IEnumerable<ListSection> sections, string footerText = null,
-            string replyToMessageId = null, CancellationToken cancellationToken = default)
+            IEnumerable<ListSection> sections, string? footerText = null,
+            string? replyToMessageId = null, CancellationToken cancellationToken = default)
         {
             if (sections == null) throw new ArgumentNullException(nameof(sections));
 
@@ -272,7 +469,7 @@ namespace WhatsAppCloud
                         sections = sections.Select(s => new
                         {
                             title = s.Title,
-                            rows = s.Rows.Select(r => new
+                            rows = (s.Rows ?? Enumerable.Empty<ListRow>()).Select(r => new
                             {
                                 id = r.Id,
                                 title = r.Title,
@@ -313,14 +510,23 @@ namespace WhatsAppCloud
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, url))
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.AccessToken);
                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                var body = await SendWithAuthAsync(request, cancellationToken).ConfigureAwait(false);
+                return ParseSendResponse(body);
+            }
+        }
 
-                using (var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false))
-                {
-                    var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    return ParseSendResponse(body);
-                }
+        /// <summary>
+        /// Sends a request with the Bearer token and returns the response body.
+        /// Disposes the response; the caller owns the request.
+        /// </summary>
+        private async Task<string> SendWithAuthAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.AccessToken);
+            using (var response = await _http.SendAsync(request, cancellationToken).ConfigureAwait(false))
+            {
+                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
         }
 
@@ -350,12 +556,13 @@ namespace WhatsAppCloud
             }
         }
 
-        private static object WithReply(object payload, string replyToMessageId)
+        private static object WithReply(object payload, string? replyToMessageId)
         {
             if (string.IsNullOrEmpty(replyToMessageId))
                 return payload;
 
-            var node = JsonSerializer.SerializeToNode(payload, JsonOptions);
+            var node = JsonSerializer.SerializeToNode(payload, JsonOptions) as JsonObject
+                ?? throw new InvalidOperationException("Failed to serialize the message payload.");
             node["context"] = new JsonObject { ["message_id"] = replyToMessageId };
             return node;
         }

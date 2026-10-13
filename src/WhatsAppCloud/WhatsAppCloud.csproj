@@ -6,22 +6,23 @@
     <Authors>Eslam Ashraf;Github Contributors</Authors>
     <PackageTags>whatsapp;whatsapp-cloud-api;meta;messaging;sdk</PackageTags>
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
     <PackageId>WhatsAppCloud.Net</PackageId>
     <RootNamespace>WhatsAppCloud</RootNamespace>
     <LangVersion>latest</LangVersion>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
       <RepositoryUrl>https://github.com/SENESO/WhatsAppCloud.Net</RepositoryUrl>
       <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/SENESO/WhatsAppCloud.Net</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>NuGet polish release: branded package icon, embedded README, and full repository metadata.</PackageReleaseNotes>
+    <PackageReleaseNotes>1.1.0: media upload (UploadMediaAsync), send-by-media-ID methods, GetMediaInfoAsync/DeleteMediaAsync, richer webhook parsing (media IDs, captions for all media types, interactive button/list replies), constant-time webhook challenge verification, nullable reference type annotations, dependency updates.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="System.Text.Json" Version="8.0.6" />
   </ItemGroup>
 
 

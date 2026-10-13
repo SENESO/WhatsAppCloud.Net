@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using WhatsAppCloud;
@@ -20,13 +22,9 @@ namespace WhatsAppCloud.IntegrationTests
     {
         private WhatsAppClient CreateClient(out string testNumber)
         {
-            var accessToken = Environment.GetEnvironmentVariable("WHATSAPP_ACCESS_TOKEN");
-            var phoneNumberId = Environment.GetEnvironmentVariable("WHATSAPP_PHONE_NUMBER_ID");
-            testNumber = Environment.GetEnvironmentVariable("WHATSAPP_TEST_NUMBER");
-
-            Require(accessToken, nameof(accessToken) + " (WHATSAPP_ACCESS_TOKEN)");
-            Require(phoneNumberId, nameof(phoneNumberId) + " (WHATSAPP_PHONE_NUMBER_ID)");
-            Require(testNumber, nameof(testNumber) + " (WHATSAPP_TEST_NUMBER)");
+            var accessToken = Require("WHATSAPP_ACCESS_TOKEN");
+            var phoneNumberId = Require("WHATSAPP_PHONE_NUMBER_ID");
+            testNumber = Require("WHATSAPP_TEST_NUMBER");
 
             return new WhatsAppClient(new WhatsAppClientOptions
             {
@@ -35,10 +33,19 @@ namespace WhatsAppCloud.IntegrationTests
             });
         }
 
-        private static void Require(string value, string name)
+        private static string Require(string name)
         {
+            var value = Environment.GetEnvironmentVariable(name);
             if (string.IsNullOrWhiteSpace(value))
                 Assert.Ignore($"Skipped: {name} environment variable is not set.");
+            return value!;
+        }
+
+        private static string RequireMessageId(Models.SendMessageResult result, string what)
+        {
+            Assert.IsTrue(result.Successful, $"The {what} call did not return a message id.");
+            Assert.IsFalse(string.IsNullOrEmpty(result.MessageId));
+            return result.MessageId!;
         }
 
         [Test]
@@ -50,8 +57,7 @@ namespace WhatsAppCloud.IntegrationTests
                 testNumber,
                 $"Integration test {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC - WhatsAppCloud .NET SDK");
 
-            Assert.IsTrue(result.Successful, "The send call did not return a message id.");
-            Assert.IsFalse(string.IsNullOrEmpty(result.MessageId));
+            RequireMessageId(result, "send");
             Assert.AreEqual(testNumber, result.To);
         }
 
@@ -64,8 +70,7 @@ namespace WhatsAppCloud.IntegrationTests
 
             var result = await client.SendTemplateAsync(testNumber, "hello_world", "en_US");
 
-            Assert.IsTrue(result.Successful, "The send call did not return a message id.");
-            Assert.IsFalse(string.IsNullOrEmpty(result.MessageId));
+            RequireMessageId(result, "send");
         }
 
         [Test]
@@ -78,8 +83,7 @@ namespace WhatsAppCloud.IntegrationTests
                 "https://placehold.co/600x400/png",
                 "WhatsAppCloud integration test");
 
-            Assert.IsTrue(result.Successful, "The send call did not return a message id.");
-            Assert.IsFalse(string.IsNullOrEmpty(result.MessageId));
+            RequireMessageId(result, "send");
         }
 
         [Test]
@@ -90,8 +94,40 @@ namespace WhatsAppCloud.IntegrationTests
             var result = await client.SendLocationAsync(
                 testNumber, 30.0444, 31.2357, "Cairo", "Integration test location");
 
-            Assert.IsTrue(result.Successful, "The send call did not return a message id.");
-            Assert.IsFalse(string.IsNullOrEmpty(result.MessageId));
+            RequireMessageId(result, "send");
+        }
+
+        [Test]
+        public async Task UploadMedia_ThenSendById_ThenDelete_WorksEndToEnd()
+        {
+            var client = CreateClient(out var testNumber);
+
+            // A tiny valid PNG (1x1 pixel) written to a temp file.
+            var pngBytes = Convert.FromBase64String(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+            var tempPath = Path.Combine(Path.GetTempPath(), $"wacloud-test-{Guid.NewGuid():N}.png");
+            await File.WriteAllBytesAsync(tempPath, pngBytes);
+            try
+            {
+                var upload = await client.UploadMediaAsync(tempPath, "image/png");
+                Assert.IsTrue(upload.Successful, "The media upload did not return a media id.");
+                Assert.IsFalse(string.IsNullOrEmpty(upload.MediaId));
+                var mediaId = upload.MediaId!;
+
+                var info = await client.GetMediaInfoAsync(mediaId);
+                Assert.IsNotNull(info);
+                Assert.IsFalse(string.IsNullOrEmpty(info!.Url));
+
+                var sent = await client.SendImageByIdAsync(
+                    testNumber, mediaId, "Uploaded via WhatsAppCloud .NET SDK");
+                RequireMessageId(sent, "send-by-id");
+
+                Assert.IsTrue(await client.DeleteMediaAsync(mediaId), "Media delete failed.");
+            }
+            finally
+            {
+                File.Delete(tempPath);
+            }
         }
 
         [Test]
@@ -100,10 +136,10 @@ namespace WhatsAppCloud.IntegrationTests
             var client = CreateClient(out var testNumber);
 
             var sent = await client.SendTextAsync(testNumber, "Mark-as-read integration test");
-            Assert.IsTrue(sent.Successful, "The send call did not return a message id.");
+            var messageId = RequireMessageId(sent, "send");
 
             Assert.DoesNotThrowAsync(async () =>
-                await client.MarkAsReadAsync(sent.MessageId));
+                await client.MarkAsReadAsync(messageId));
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -112,7 +113,7 @@ namespace WhatsAppCloud.Tests
             var ex = Assert.Throws<WhatsAppApiException>(() =>
                 WhatsAppClient.ParseSendResponse(errorJson));
 
-            Assert.AreEqual(131030, ex.Code);
+            Assert.AreEqual(131030, ex!.Code);
             Assert.AreEqual("OAuthException", ex.ErrorType);
             Assert.IsTrue(ex.Message.Contains("Invalid parameter"));
         }
@@ -243,13 +244,217 @@ namespace WhatsAppCloud.Tests
             }
         }
 
+        // ---------- media upload & media IDs ----------
+
+        [Test]
+        public async Task UploadMediaAsync_Stream_PostsMultipartAndReturnsMediaId()
+        {
+            var handler = new FakeHandler(@"{ ""id"": ""mid.123"" }");
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes("fake-png-bytes")))
+            {
+                var result = await client.UploadMediaAsync(stream, "pic.png", "image/png");
+
+                Assert.IsTrue(result.Successful);
+                Assert.AreEqual("mid.123", result.MediaId);
+            }
+
+            Assert.AreEqual("https://graph.facebook.com/v26.0/123456789/media", handler.RequestUrl);
+            Assert.AreEqual("POST", handler.RequestMethod);
+            Assert.AreEqual("Bearer", handler.AuthScheme);
+            Assert.IsTrue(handler.RequestContentType.StartsWith(
+                "multipart/form-data", StringComparison.OrdinalIgnoreCase));
+            // The multipart body must carry Meta's three required fields.
+            Assert.IsTrue(handler.RequestBody.Contains("messaging_product"));
+            Assert.IsTrue(handler.RequestBody.Contains("pic.png"));
+            Assert.IsTrue(handler.RequestBody.Contains("image/png"));
+        }
+
+        [Test]
+        public async Task UploadMediaAsync_FilePath_UploadsFileContents()
+        {
+            var handler = new FakeHandler(@"{ ""id"": ""mid.456"" }");
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            var tempPath = Path.Combine(Path.GetTempPath(), $"wacloud-{Guid.NewGuid():N}.txt");
+            await File.WriteAllTextAsync(tempPath, "hello-media");
+            try
+            {
+                var result = await client.UploadMediaAsync(tempPath, "text/plain");
+                Assert.AreEqual("mid.456", result.MediaId);
+                Assert.IsTrue(handler.RequestBody.Contains("hello-media"));
+            }
+            finally
+            {
+                File.Delete(tempPath);
+            }
+        }
+
+        [Test]
+        public void UploadMediaAsync_Error_ThrowsWhatsAppApiException()
+        {
+            var handler = new FakeHandler(@"{ ""error"": {
+                ""message"": ""Invalid file type"", ""type"": ""OAuthException"", ""code"": 131052 } }");
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            using (var stream = new MemoryStream(new byte[] { 1, 2, 3 }))
+            {
+                var ex = Assert.ThrowsAsync<WhatsAppApiException>(async () =>
+                    await client.UploadMediaAsync(stream, "x.bin", "application/octet-stream"));
+                Assert.AreEqual(131052, ex!.Code);
+            }
+        }
+
+        [Test]
+        public void UploadMediaAsync_InvalidArguments_Throw()
+        {
+            var client = new WhatsAppClient(Options(), new HttpClient(new FakeHandler("{}")));
+
+            Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                await client.UploadMediaAsync((Stream)null!, "x.png", "image/png"));
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await client.UploadMediaAsync(" ", "image/png"));
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await client.UploadMediaAsync(new MemoryStream(), "x.png", " "));
+        }
+
+        [Test]
+        public async Task SendImageByIdAsync_PostsIdInsteadOfLink()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            var result = await client.SendImageByIdAsync("201012345678", "mid.123", "Nice pic");
+
+            Assert.IsTrue(result.Successful);
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                Assert.AreEqual("image", doc.RootElement.GetProperty("type").GetString());
+                var image = doc.RootElement.GetProperty("image");
+                Assert.AreEqual("mid.123", image.GetProperty("id").GetString());
+                Assert.AreEqual("Nice pic", image.GetProperty("caption").GetString());
+                Assert.Throws<KeyNotFoundException>(() => image.GetProperty("link"));
+            }
+        }
+
+        [Test]
+        public async Task SendVideoByIdAsync_PostsIdPayload()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendVideoByIdAsync("201012345678", "mid.vid");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                Assert.AreEqual("mid.vid",
+                    doc.RootElement.GetProperty("video").GetProperty("id").GetString());
+            }
+        }
+
+        [Test]
+        public async Task SendAudioByIdAsync_PostsIdPayload()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendAudioByIdAsync("201012345678", "mid.aud");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                Assert.AreEqual("mid.aud",
+                    doc.RootElement.GetProperty("audio").GetProperty("id").GetString());
+            }
+        }
+
+        [Test]
+        public async Task SendDocumentByIdAsync_PostsIdAndFilename()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendDocumentByIdAsync("201012345678", "mid.doc", "invoice.pdf");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                var document = doc.RootElement.GetProperty("document");
+                Assert.AreEqual("mid.doc", document.GetProperty("id").GetString());
+                Assert.AreEqual("invoice.pdf", document.GetProperty("filename").GetString());
+            }
+        }
+
+        [Test]
+        public async Task SendStickerByIdAsync_PostsIdPayload()
+        {
+            var handler = new FakeHandler(SuccessJson);
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            await client.SendStickerByIdAsync("201012345678", "mid.stk");
+
+            using (var doc = JsonDocument.Parse(handler.RequestBody))
+            {
+                Assert.AreEqual("mid.stk",
+                    doc.RootElement.GetProperty("sticker").GetProperty("id").GetString());
+            }
+        }
+
+        [Test]
+        public void SendById_EmptyMediaId_Throws()
+        {
+            var client = new WhatsAppClient(Options(), new HttpClient(new FakeHandler(SuccessJson)));
+
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await client.SendImageByIdAsync("201012345678", " "));
+        }
+
+        [Test]
+        public async Task GetMediaInfoAsync_ParsesMetadata()
+        {
+            var handler = new FakeHandler(@"{
+                ""id"": ""mid.123"",
+                ""url"": ""https://lookaside.fbsbx.com/x"",
+                ""mime_type"": ""image/jpeg"",
+                ""sha256"": ""c2hhMjU2"",
+                ""file_size"": ""109982""
+            }");
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            var info = await client.GetMediaInfoAsync("mid.123");
+
+            Assert.AreEqual("https://graph.facebook.com/v26.0/mid.123", handler.RequestUrl);
+            Assert.AreEqual("GET", handler.RequestMethod);
+            Assert.IsNotNull(info);
+            Assert.AreEqual("mid.123", info!.Id);
+            Assert.AreEqual("https://lookaside.fbsbx.com/x", info.Url);
+            Assert.AreEqual("image/jpeg", info.MimeType);
+            Assert.AreEqual("c2hhMjU2", info.Sha256);
+            Assert.AreEqual(109982, info.FileSizeBytes);
+        }
+
+        [Test]
+        public async Task DeleteMediaAsync_ReturnsTrueOnSuccess()
+        {
+            var handler = new FakeHandler(@"{ ""success"": true }");
+            var client = new WhatsAppClient(Options(), new HttpClient(handler));
+
+            var deleted = await client.DeleteMediaAsync("mid.123");
+
+            Assert.IsTrue(deleted);
+            Assert.AreEqual("https://graph.facebook.com/v26.0/mid.123", handler.RequestUrl);
+            Assert.AreEqual("DELETE", handler.RequestMethod);
+            Assert.AreEqual("Bearer", handler.AuthScheme);
+        }
+
         private class FakeHandler : HttpMessageHandler
         {
             private readonly string _responseJson;
-            public string RequestUrl { get; private set; }
-            public string AuthScheme { get; private set; }
-            public string AuthParameter { get; private set; }
-            public string RequestBody { get; private set; }
+            public string RequestUrl { get; private set; } = string.Empty;
+            public string RequestMethod { get; private set; } = string.Empty;
+            public string? AuthScheme { get; private set; }
+            public string? AuthParameter { get; private set; }
+            public string RequestBody { get; private set; } = string.Empty;
+            public string RequestContentType { get; private set; } = string.Empty;
 
             public FakeHandler(string responseJson) => _responseJson = responseJson;
 
@@ -257,10 +462,14 @@ namespace WhatsAppCloud.Tests
                 HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 // Capture everything while the request is still alive.
-                RequestUrl = request.RequestUri.ToString();
+                RequestUrl = request.RequestUri?.ToString() ?? string.Empty;
+                RequestMethod = request.Method.Method;
                 AuthScheme = request.Headers.Authorization?.Scheme;
                 AuthParameter = request.Headers.Authorization?.Parameter;
-                RequestBody = await request.Content.ReadAsStringAsync();
+                RequestContentType = request.Content?.Headers.ContentType?.ToString() ?? string.Empty;
+                RequestBody = request.Content == null
+                    ? string.Empty
+                    : await request.Content.ReadAsStringAsync();
 
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {

@@ -24,7 +24,6 @@
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/Microsoft.VisualStudio.TestPlatform.Common.dll
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/testhost.dll
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/Newtonsoft.Json.dll
-/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/NuGet.Frameworks.dll
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/nunit.framework.dll
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/cs/Microsoft.TestPlatform.CoreUtilities.resources.dll
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/cs/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll
@@ -99,3 +98,4 @@
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/obj/Release/net8.0/WhatsAppCloud.IntegrationTests.pdb
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/obj/Release/net8.0/WhatsAppCloud.IntegrationTests.genruntimeconfig.cache
 /home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/obj/Release/net8.0/ref/WhatsAppCloud.IntegrationTests.dll
+/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/test/WhatsAppCloud.IntegrationTests/bin/Release/net8.0/.msCoverageSourceRootsMapping_WhatsAppCloud.IntegrationTests

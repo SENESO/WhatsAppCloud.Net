@@ -21,7 +21,6 @@ and `net8.0`.
 ```bash
 dotnet add package WhatsAppCloud.Net
 ```
-_(package publishing coming with v1.0.0 — for now reference the project)_
 
 ## Quick start
 
@@ -93,6 +92,42 @@ Bring your own `HttpClient` (e.g. from `IHttpClientFactory`):
 var client = new WhatsAppClient(options, httpClient);
 ```
 
+## Media upload
+
+Media can be sent by public HTTPS URL (above), or uploaded once and reused by
+ID — cheaper for repeated sends (the media ID is valid for 30 days):
+
+```csharp
+// Upload from disk…
+var upload = await client.UploadMediaAsync("/path/to/photo.jpg", "image/jpeg");
+
+// …or from any stream (memory, network, …)
+using (var stream = File.OpenRead("/path/to/invoice.pdf"))
+{
+    upload = await client.UploadMediaAsync(stream, "invoice.pdf", "application/pdf");
+}
+
+Console.WriteLine(upload.MediaId); // pass this to the Send*ByIdAsync methods
+
+// Send by media ID instead of URL
+await client.SendImageByIdAsync("201012345678", upload.MediaId, "Your photo!");
+await client.SendVideoByIdAsync("201012345678", videoMediaId, "Watch this");
+await client.SendAudioByIdAsync("201012345678", audioMediaId);
+await client.SendDocumentByIdAsync("201012345678", docMediaId, filename: "invoice.pdf");
+await client.SendStickerByIdAsync("201012345678", stickerMediaId);
+
+// Look up a media object (e.g. an ID from an inbound webhook) to get a
+// short-lived download URL, MIME type and size — download immediately,
+// the URL expires after ~5 minutes
+var info = await client.GetMediaInfoAsync(inboundMessage.MediaId);
+Console.WriteLine($"{info!.MimeType} — {info.FileSizeBytes} bytes: {info.Url}");
+
+// Free the storage when you're done with an upload
+await client.DeleteMediaAsync(upload.MediaId);
+```
+
+Size limits: images 5 MB, video/audio 16 MB, documents 100 MB, stickers 500 KB.
+
 ## Webhooks
 
 Verification handshake (the GET Meta sends when you save the webhook URL):
@@ -120,6 +155,41 @@ foreach (var msg in WebhookParser.GetMessages(payload))
 foreach (var status in WebhookParser.GetStatuses(payload))
     Console.WriteLine($"{status.MessageId}: {status.Status}");
 ```
+
+`IncomingMessage` carries `MediaId` for inbound media messages (feed it to
+`GetMediaInfoAsync` for a download URL), and `ReplyId`/`ReplyTitle` for
+interactive button/list replies (`Text` holds the tapped title).
+
+## API reference
+
+**`WhatsAppClient`** (construct with `WhatsAppClientOptions`; optional own `HttpClient`):
+
+| Method | Description |
+|---|---|
+| `SendTextAsync(to, body, previewUrl?, replyToMessageId?, ct?)` | Free-form text (needs an open 24h window) |
+| `SendTemplateAsync(to, templateName, languageCode, bodyParameters?, replyToMessageId?, ct?)` | Approved template with `{{1}}`, `{{2}}`… parameters |
+| `SendImageAsync / SendVideoAsync` | Media by public HTTPS URL, optional caption |
+| `SendAudioAsync / SendStickerAsync` | Audio / sticker (WEBP) by public HTTPS URL |
+| `SendDocumentAsync` | Document by URL, optional filename + caption |
+| `SendImageByIdAsync / SendVideoByIdAsync / SendAudioByIdAsync / SendDocumentByIdAsync / SendStickerByIdAsync` | Media by uploaded media ID |
+| `UploadMediaAsync(filePath, mimeType, ct?)` / `UploadMediaAsync(stream, fileName, mimeType, ct?)` | Upload media → reusable `MediaUploadResult.MediaId` (30 days) |
+| `GetMediaInfoAsync(mediaId, ct?)` | Metadata + short-lived download URL for a media ID |
+| `DeleteMediaAsync(mediaId, ct?)` | Delete an uploaded media object |
+| `SendLocationAsync(to, latitude, longitude, name?, address?, …)` | Location pin |
+| `SendContactsAsync(to, contacts, …)` | One or more contact cards |
+| `SendButtonsAsync(to, bodyText, buttons, footerText?, …)` | Up to 3 interactive reply buttons |
+| `SendListAsync(to, bodyText, buttonText, sections, footerText?, …)` | Interactive list (≤10 sections × 10 rows) |
+| `MarkAsReadAsync(messageId, ct?)` | Blue ticks for an inbound message |
+| `ParseSendResponse(json)` | Parse a raw API response (throws `WhatsAppApiException` on errors) |
+
+**Webhooks** (`WhatsAppCloud.Webhooks`): `WebhookSecurity.VerifyChallenge(…)` answers
+Meta's verification handshake; `WebhookSecurity.IsValidSignature(appSecret, body, header)`
+validates `X-Hub-Signature-256` (constant-time); `WebhookParser.Parse(…)` /
+`GetMessages(…)` / `GetStatuses(…)` flatten the payload into `IncomingMessage` /
+`MessageStatus` lists.
+
+**Errors**: API errors throw `WhatsAppApiException` with Meta's `Code` and `ErrorType`;
+`SendMessageResult.Successful` / `MediaUploadResult.Successful` are false when no ID came back.
 
 ## API notes
 

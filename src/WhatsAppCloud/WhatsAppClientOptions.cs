@@ -8,12 +8,12 @@ namespace WhatsAppCloud
         /// <summary>
         /// The phone number ID from the Meta developer console (not the phone number itself).
         /// </summary>
-        public string PhoneNumberId { get; set; }
+        public string? PhoneNumberId { get; set; }
 
         /// <summary>
         /// A system-user or temporary access token with whatsapp_business_messaging permission.
         /// </summary>
-        public string AccessToken { get; set; }
+        public string? AccessToken { get; set; }
 
         /// <summary>
         /// Graph API version, e.g. "v26.0". Defaults to the latest known version.

@@ -5,7 +5,7 @@
   },
   "projects": {
     "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/WhatsAppCloud.csproj": {
-      "version": "1.0.2",
+      "version": "1.1.0",
       "restore": {
         "projectUniqueName": "/home/hatch/workspace/github-projects/whatsapp-cloud-dotnet/src/WhatsAppCloud/WhatsAppCloud.csproj",
         "projectName": "WhatsAppCloud.Net",
@@ -22,6 +22,7 @@
           "netstandard2.0"
         ],
         "sources": {
+          "/tmp/nupkg-out": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -35,6 +36,7 @@
           }
         },
         "warningProperties": {
+          "allWarningsAsErrors": true,
           "warnAsError": [
             "NU1605"
           ]
@@ -51,7 +53,7 @@
           "dependencies": {
             "System.Text.Json": {
               "target": "Package",
-              "version": "[8.0.5, )"
+              "version": "[8.0.6, )"
             }
           },
           "imports": [
@@ -83,7 +85,7 @@
             },
             "System.Text.Json": {
               "target": "Package",
-              "version": "[8.0.5, )"
+              "version": "[8.0.6, )"
             }
           },
           "imports": [
@@ -117,6 +119,7 @@
           "net8.0"
         ],
         "sources": {
+          "/tmp/nupkg-out": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -130,6 +133,7 @@
           }
         },
         "warningProperties": {
+          "allWarningsAsErrors": true,
           "warnAsError": [
             "NU1605"
           ]
@@ -146,7 +150,7 @@
           "dependencies": {
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",
-              "version": "[17.8.0, )"
+              "version": "[17.14.1, )"
             },
             "NUnit": {
               "target": "Package",
@@ -154,7 +158,7 @@
             },
             "NUnit3TestAdapter": {
               "target": "Package",
-              "version": "[4.5.0, )"
+              "version": "[4.6.0, )"
             }
           },
           "imports": [
